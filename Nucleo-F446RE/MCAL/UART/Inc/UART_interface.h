@@ -53,7 +53,7 @@ typedef struct
 } UART_Config_t;
 
 uint8_t UART_u8Init(UART_Config_t *UART_Config);
-uint8_t UART_u8Transmit(UART_t num, uint8_t Data);
-uint8_t UART_u8Receive(UART_t num, uint8_t *Data);
+uint8_t UART_u8Transmit(UART_t num, uint8_t *Data, uint32_t DataSize);
+uint8_t UART_u8Receive(UART_t num, uint8_t *Data, uint32_t DataSize);
 
 #endif
