@@ -50,3 +50,17 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+/.metadata/
+
+
+####################################
+
+.DS_Store
+.cproject
+.project
+*.xml   
+*.Ld
+*.prefs
+*.s
+syscalls.c
+sysmem.c
