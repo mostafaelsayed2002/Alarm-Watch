@@ -64,3 +64,9 @@ dkms.conf
 *.s
 syscalls.c
 sysmem.c
+*.json
+
+
+*.launch
+
+*.iml
