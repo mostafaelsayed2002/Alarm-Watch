@@ -6,6 +6,12 @@
 
 static I2C_RegDef_t *I2Cx[] = {I2C1, I2C2, I2C3};
 
+static uint8_t I2CxSlaveAddress[3];
+static uint8_t *I2CxData[3];
+static uint8_t I2CxDataSize[3];
+static uint8_t I2CxStatus[3];
+static void (*I2CxCallback[3])(void);
+
 static void Start(I2C_t num)
 {
     I2Cx[num]->CR1 |= (1 << START);
@@ -13,15 +19,20 @@ static void Start(I2C_t num)
         ;
 }
 
+static void StartIT(I2C_t num)
+{
+    I2Cx[num]->CR1 |= (1 << START);
+}
+
 static void Stop(I2C_t num)
 {
     I2Cx[num]->CR1 |= (1 << STOP);
 }
 
-static void SendSlaveAddress(I2C_t num, uint8_t SlaveAddress, uint8_t RW)
+static void SendSlaveAddress(I2C_t num, uint8_t SlaveAddress)
 {
     // Send Slave Address with R/W bit
-    I2Cx[num]->DR = ((SlaveAddress << 1) | RW);
+    I2Cx[num]->DR = SlaveAddress;
 
     while (!READ_BIT(I2Cx[num]->SR1, ADDR))
         ; // Wait for address to be sent
@@ -98,7 +109,7 @@ uint8_t I2C_Init(I2C_Config_t *I2C_Config)
 uint8_t I2C_Write(I2C_t num, uint8_t SlaveAddress, uint8_t *Data, uint8_t DataSize)
 {
     Start(num);
-    SendSlaveAddress(num, SlaveAddress, 0); // Write
+    SendSlaveAddress(num, (SlaveAddress << 1) | 0); // Write
     SendData(num, Data, DataSize);
     Stop(num);
     return OK;
@@ -107,8 +118,177 @@ uint8_t I2C_Write(I2C_t num, uint8_t SlaveAddress, uint8_t *Data, uint8_t DataSi
 uint8_t I2C_Read(I2C_t num, uint8_t SlaveAddress, uint8_t *Data, uint8_t DataSize)
 {
     Start(num);
-    SendSlaveAddress(num, SlaveAddress, 1); // Read
+    SendSlaveAddress(num, (SlaveAddress << 1) | 1); // Read
     ReadData(num, Data, DataSize);
     Stop(num);
     return OK;
+}
+
+uint8_t I2C_WriteIT(I2C_t num, uint8_t SlaveAddress, uint8_t *Data, uint8_t DataSize, void (*Callback)(void))
+{
+    if (I2CxStatus[num] == I2C_BUSY)
+        return NOK;
+
+    I2Cx[num]->CR2 |= (1 << ITEVTEN);
+    I2Cx[num]->CR2 |= (1 << ITBUFEN);
+    I2CxSlaveAddress[num] = SlaveAddress << 1 | 0;
+    I2CxSlaveAddress[num] = Data;
+    I2CxDataSize[num] = DataSize;
+    I2CxStatus[num] = I2C_BUSY;
+    I2CxCallback[num] = Callback;
+    StartIT(num);
+    return OK;
+}
+
+uint8_t I2C_ReadIT(I2C_t num, uint8_t SlaveAddress, uint8_t *Data, uint8_t DataSize, void (*Callback)(void))
+{
+    if (I2CxStatus[num] == I2C_BUSY)
+        return NOK;
+    I2Cx[num]->CR2 |= (1 << ITEVTEN);
+    I2Cx[num]->CR2 |= (1 << ITBUFEN);
+    I2CxSlaveAddress[num] = SlaveAddress << 1 | 1;
+    I2CxSlaveAddress[num] = Data;
+    I2CxDataSize[num] = DataSize;
+    I2CxStatus[num] = I2C_BUSY;
+    I2CxCallback[num] = Callback;
+    StartIT(num);
+    return OK;
+}
+
+void I2C1_EV_IRQHandler(void)
+{
+    if (READ_BIT(I2C1->SR1, SB))
+    {
+        // Send Slave Address with R/W bit
+        I2C1->DR = I2CxSlaveAddress[0];
+    }
+    else if (READ_BIT(I2C1->SR1, ADDR))
+    {
+        (void)I2C1->SR1;
+        (void)I2C1->SR2;
+    }
+    else if (READ_BIT(I2C1->SR1, TXE))
+    {
+        if (I2CxDataSize[0] > 0)
+        {
+            I2C1->DR = *I2CxData[0];
+            I2CxData[0]++;
+            I2CxDataSize[0]--;
+        }
+        else
+        {
+            Stop(0);
+            I2CxStatus[0] = I2C_READY;
+            if (I2CxCallback[0] != NULL)
+                I2CxCallback[0]();
+        }
+    }
+    else if (READ_BIT(I2C1->SR1, RXNE))
+    {
+        if (I2CxDataSize[0] > 0)
+        {
+            *I2CxData[0] = I2C1->DR;
+            I2CxData[0]++;
+            I2CxDataSize[0]--;
+        }
+        else
+        {
+            Stop(0);
+            I2CxStatus[0] = I2C_READY;
+            if (I2CxCallback[0] != NULL)
+                I2CxCallback[0]();
+        }
+    }
+}
+
+void I2C2_EV_IRQHandler(void)
+{
+    if (READ_BIT(I2C2->SR1, SB))
+    {
+        // Send Slave Address with R/W bit
+        I2C2->DR = I2CxSlaveAddress[1];
+    }
+    else if (READ_BIT(I2C2->SR1, ADDR))
+    {
+        (void)I2C2->SR1;
+        (void)I2C2->SR2;
+    }
+    else if (READ_BIT(I2C2->SR1, TXE))
+    {
+        if (I2CxDataSize[1] > 0)
+        {
+            I2C2->DR = *I2CxData[1];
+            I2CxData[1]++;
+            I2CxDataSize[1]--;
+        }
+        else
+        {
+            Stop(1);
+            I2CxStatus[1] = I2C_READY;
+            if (I2CxCallback[1] != NULL)
+                I2CxCallback[1]();
+        }
+    }
+    else if (READ_BIT(I2C2->SR1, RXNE))
+    {
+        if (I2CxDataSize[1] > 0)
+        {
+            *I2CxData[1] = I2C2->DR;
+            I2CxData[1]++;
+            I2CxDataSize[1]--;
+        }
+        else
+        {
+            Stop(1);
+            I2CxStatus[1] = I2C_READY;
+            if (I2CxCallback[1] != NULL)
+                I2CxCallback[1]();
+        }
+    }
+}
+
+void I2C3_EV_IRQHandler(void)
+{
+    if (READ_BIT(I2C3->SR1, SB))
+    {
+        // Send Slave Address with R/W bit
+        I2C3->DR = I2CxSlaveAddress[2];
+    }
+    else if (READ_BIT(I2C3->SR1, ADDR))
+    {
+        (void)I2C3->SR1;
+        (void)I2C3->SR2;
+    }
+    else if (READ_BIT(I2C3->SR1, TXE))
+    {
+        if (I2CxDataSize[2] > 0)
+        {
+            I2C3->DR = *I2CxData[2];
+            I2CxData[2]++;
+            I2CxDataSize[2]--;
+        }
+        else
+        {
+            Stop(1);
+            I2CxStatus[2] = I2C_READY;
+            if (I2CxCallback[2] != NULL)
+                I2CxCallback[2]();
+        }
+    }
+    else if (READ_BIT(I2C3->SR1, RXNE))
+    {
+        if (I2CxDataSize[2] > 0)
+        {
+            *I2CxData[2] = I2C3->DR;
+            I2CxData[2]++;
+            I2CxDataSize[2]--;
+        }
+        else
+        {
+            Stop(1);
+            I2CxStatus[2] = I2C_READY;
+            if (I2CxCallback[2] != NULL)
+                I2CxCallback[2]();
+        }
+    }
 }

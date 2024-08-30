@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define I2C_READY 1
+#define I2C_BUSY 2
+
 typedef enum
 {
     I2C1,
@@ -34,5 +37,7 @@ typedef struct
 uint8_t I2C_Init(I2C_Config_t *I2C_Config);
 uint8_t I2C_Write(I2C_t num, uint8_t SlaveAddress, uint8_t *Data, uint8_t DataSize);
 uint8_t I2C_Read(I2C_t num, uint8_t SlaveAddress, uint8_t *Data, uint8_t DataSize);
+uint8_t I2C_WriteIT(I2C_t num, uint8_t SlaveAddress, uint8_t *Data, uint8_t DataSize, void (*Callback)(void));
+uint8_t I2C_ReadIT(I2C_t num, uint8_t SlaveAddress, uint8_t *Data, uint8_t DataSize, void (*Callback)(void));
 
 #endif
