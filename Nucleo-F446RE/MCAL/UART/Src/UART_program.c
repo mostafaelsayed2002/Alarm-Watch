@@ -4,6 +4,7 @@
 #include "STM32F466xx.h"
 #include "ErrType.h"
 #include <math.h>
+#include <string.h>
 
 // typedef struct
 // {
@@ -58,8 +59,9 @@ uint8_t UART_u8Init(UART_Config_t *UART_Config)
     return OK;
 }
 
-uint8_t UART_u8Transmit(UART_t num, uint8_t *Data, uint32_t DataSize)
+uint8_t UART_u8Transmit(UART_t num, uint8_t *Data)
 {
+    uint32_t DataSize = strlen(Data);
     for (uint32_t i = 0; i < DataSize; i++)
     {
         SET_BIT(UARTx[num]->CR1, UART_CR1_TE);
@@ -69,13 +71,13 @@ uint8_t UART_u8Transmit(UART_t num, uint8_t *Data, uint32_t DataSize)
     }
     return OK;
 }
-uint8_t UART_u8Receive(UART_t num, uint8_t *Data, uint32_t DataSize)
+uint8_t UART_u8Receive(UART_t num, uint8_t *Data)
 {
     // Enble Receive
+    uint32_t DataSize = strlen(Data);
+    SET_BIT(UARTx[num]->CR1, UART_CR1_RE);
     for (uint32_t i = 0; i < DataSize; i++)
     {
-        SET_BIT(UARTx[num]->CR1, UART_CR1_RE);
-
         while (READ_BIT(UARTx[num]->SR, UART_SR_RXNE) == 0)
             ;
         Data[i] = UARTx[num]->DR;
