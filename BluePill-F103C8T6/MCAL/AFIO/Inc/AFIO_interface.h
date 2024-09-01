@@ -1,0 +1,38 @@
+#ifndef AFIO_INTERFACE_H
+#define AFIO_INTERFACE_H
+
+#include <stdint.h>
+typedef enum
+{
+    AFIO_EXTI_LINE0,
+    AFIO_EXTI_LINE1,
+    AFIO_EXTI_LINE2,
+    AFIO_EXTI_LINE3,
+    AFIO_EXTI_LINE4,
+    AFIO_EXTI_LINE5,
+    AFIO_EXTI_LINE6,
+    AFIO_EXTI_LINE7,
+    AFIO_EXTI_LINE8,
+    AFIO_EXTI_LINE9,
+    AFIO_EXTI_LINE10,
+    AFIO_EXTI_LINE11,
+    AFIO_EXTI_LINE12,
+    AFIO_EXTI_LINE13,
+    AFIO_EXTI_LINE14,
+    AFIO_EXTI_LINE15,
+} AFIO_EXTI_Line_t;
+
+typedef enum
+{
+    AFIO_PORTA,
+    AFIO_PORTB,
+    AFIO_PORTC,
+    AFIO_PORTD,
+    AFIO_PORTE,
+    AFIO_PORTF,
+    AFIO_PORTG,
+} AFIO_Port_t;
+
+uint8_t AFIO_EXTI_Enable(AFIO_EXTI_Line_t line, AFIO_Port_t port);
+
+#endif
