@@ -2,6 +2,14 @@
 #include "SYSTICK_interface.h"
 #include "ErrType.h"
 
+static DS1307_Time_t *value;
+static void (*GetCallBack)(void);
+static uint8_t dataReceived[7] = {0};
+
+static I2C_t num = I2C1;
+
+uint8_t data[1] = {0x00};
+
 static uint8_t HEXtoBCD(uint8_t hex)
 {
     return ((hex / 10) << 4) | (hex % 10);
@@ -11,8 +19,6 @@ static uint8_t BCDtoHEX(uint8_t bcd)
 {
     return ((bcd >> 4) * 10) + (bcd & 0x0F);
 }
-
-static I2C_t num = I2C1;
 
 uint8_t DS1307_AttachI2C(I2C_t *num)
 {
@@ -43,13 +49,20 @@ uint8_t DS1307_u8SetTime(DS1307_Time_t *Time)
     return OK;
 }
 
+uint8_t DS1307_u8SetTimeIT(DS1307_Time_t *Time, void (*Callback)(void))
+{
+    uint8_t data[8] = {0x00, HEXtoBCD(Time->Seconds), HEXtoBCD(Time->Minutes), HEXtoBCD(Time->Hours), HEXtoBCD(Time->Day), HEXtoBCD(Time->Date), HEXtoBCD(Time->Month), HEXtoBCD(Time->Year)};
+    I2C_WriteIT(num, DS1307_ADDRESS, data, 8, Callback);
+    return OK;
+}
+
 uint8_t DS1307_u8GetTime(DS1307_Time_t *Time)
 {
     uint8_t data[1] = {0x00};
     I2C_Write(num, DS1307_ADDRESS, data, 1);
     SYSTICK_voidDelayms(10);
     uint8_t dataReceived[7] = {0};
-    I2C_Read(num, DS1307_ADDRESS, (uint8_t *)dataReceived, 7);
+    I2C_Read(num, DS1307_ADDRESS, dataReceived, 7);
     Time->Seconds = BCDtoHEX(dataReceived[0]);
     Time->Minutes = BCDtoHEX(dataReceived[1]);
     Time->Hours = BCDtoHEX(dataReceived[2]);
@@ -60,9 +73,34 @@ uint8_t DS1307_u8GetTime(DS1307_Time_t *Time)
     return OK;
 }
 
+void GetTimeCallbackRead(void)
+{
+    value->Seconds = BCDtoHEX(dataReceived[0]);
+    value->Minutes = BCDtoHEX(dataReceived[1]);
+    value->Hours = BCDtoHEX(dataReceived[2]);
+    value->Day = BCDtoHEX(dataReceived[3]);
+    value->Date = BCDtoHEX(dataReceived[4]);
+    value->Month = BCDtoHEX(dataReceived[5]);
+    value->Year = BCDtoHEX(dataReceived[6]);
+    GetCallBack();
+}
+
+void GetTimeCallbackWrite(void)
+{
+    SYSTICK_voidDelayms(5);
+    I2C_ReadIT(num, DS1307_ADDRESS, dataReceived, 7, GetTimeCallbackRead);
+}
+
+uint8_t DS1307_u8GetTimeIT(DS1307_Time_t *Time, void (*Callback)(void))
+{
+    value = Time;
+    GetCallBack = Callback;
+    I2C_WriteIT(num, DS1307_ADDRESS, data, 1, GetTimeCallbackWrite);
+    return OK;
+}
+
 uint8_t DS1307_u8SetHourMode(uint8_t HourMode)
 {
-
     uint8_t data[2] = {0x02, (HourMode << 6)};
     I2C_Write(num, DS1307_ADDRESS, data, 2);
     return OK;

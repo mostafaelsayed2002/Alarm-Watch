@@ -24,8 +24,15 @@ typedef enum
 uint8_t DS1307_AttachI2C(I2C_t *num);
 uint8_t DS1307_u8EnableClock();
 uint8_t DS1307_u8DisableClock();
+
 uint8_t DS1307_u8SetTime(DS1307_Time_t *Time);
+
+uint8_t DS1307_u8SetTimeIT(DS1307_Time_t *Time, void (*Callback)(void));
+
 uint8_t DS1307_u8GetTime(DS1307_Time_t *Time);
+
+uint8_t DS1307_u8GetTimeIT(DS1307_Time_t *Time, void (*Callback)(void));
+
 uint8_t DS1307_u8SetHourMode(uint8_t HourMode);
 
 #endif // DS1307_INTERFACE_H

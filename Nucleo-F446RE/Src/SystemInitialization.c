@@ -3,13 +3,30 @@
 #include "RCC_interface.h"
 #include "UART_interface.h"
 #include "I2C_interface.h"
+#include "NVIC_interface.h"
+#include "DS1307_interface.h"
 
 void SYS_Initialization()
 {
+    /************************** NVIC Initialization ******************/
+    NVIC_u8Enable(I2C1_EV_IRQ);
+    NVIC_u8Enable(I2C2_EV_IRQ);
+
     /************************** GPIO Initialization ******************/
 
     RCC_voidAHB1EnablePeripheralClock(0); // GPIOA
     RCC_voidAHB1EnablePeripheralClock(1); // GPIOB
+    RCC_voidAHB1EnablePeripheralClock(2); // GPIOC
+
+    GPIO_PinConfig_t UserButton = {
+        .mode = INPUT,
+        .outputSpeed = LOW_SPEED,
+        .outputType = PUSH_PULL,
+        .pin = PIN13,
+        .port = PORTC,
+        .pullType = PULL_UP};
+
+    GPIO_u8InitPin(&UserButton);
 
     GPIO_PinConfig_t TX = {
         .alternateFunction = AF7,
@@ -49,7 +66,7 @@ void SYS_Initialization()
     GPIO_u8InitPin(&SCL);
     GPIO_u8InitPin(&SDA);
 
-    /************************** Peripherals Initialization ******************/
+    /************************** MCAL Peripherals Initialization ******************/
 
     RCC_voidAPB1EnablePeripheralClock(17); // USART2
     RCC_voidAPB1EnablePeripheralClock(21); // I2C1
@@ -71,4 +88,8 @@ void SYS_Initialization()
 
     UART_u8Init(&UART2_Config);
     I2C_Init(&I2C1_Config);
+
+    /************************** MCAL Peripherals Initialization ******************/
+
+    DS1307_AttachI2C(I2C1);
 }
