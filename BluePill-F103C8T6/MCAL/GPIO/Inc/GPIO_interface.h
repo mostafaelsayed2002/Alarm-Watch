@@ -72,3 +72,6 @@ uint8_t GPIO_u8SetPinValue(Port_t port, Pin_t pin, PinState_t state);
 uint8_t GPIO_u8TogglePinValue(Port_t port, Pin_t pin);
 
 uint8_t GPIO_u8ReadPinValue(Port_t port, Pin_t pin, PinState_t *state);
+
+
+#endif

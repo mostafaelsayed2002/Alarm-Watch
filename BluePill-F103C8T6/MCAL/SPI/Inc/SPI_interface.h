@@ -3,10 +3,14 @@
 
 #include <stdint.h>
 
+#define SPI_READY 0
+#define SPI_BUSY 1
+
 typedef enum
 {
     SPI1,
     SPI2,
+    SPI3,
 } SPI_t;
 
 typedef enum
@@ -51,6 +55,12 @@ typedef enum
     SECOND_EDGE
 } CPHA_t;
 
+typedef enum
+{
+    HW,
+    SW
+} SSM_t;
+
 typedef struct
 {
     SPI_t SPI;
@@ -60,10 +70,11 @@ typedef struct
     MODE_t Mode;
     CPOL_t clockPolarity;
     CPHA_t clockPhase;
+    SSM_t SoftwareSlaveManagement;
 } SPI_Config_t;
 
 uint8_t SPI_u8Init(SPI_Config_t *copy_Config);
-uint8_t SPI_u8Transmit_IT(SPI_t copy_SPI, uint16_t *pData, uint32_t Len);
-uint8_t SPI_u8ReceiveIT(SPI_t copy_SPI, void (*callback)(uint16_t));
+uint8_t SPI_u8Transmit_IT(SPI_t copy_SPI, uint8_t *pData, uint32_t Len, void (*callback)(void));
+uint8_t SPI_u8Receive_IT(SPI_t copy_SPI, uint8_t *pData, uint32_t Len, void (*callback)(void));
 
 #endif

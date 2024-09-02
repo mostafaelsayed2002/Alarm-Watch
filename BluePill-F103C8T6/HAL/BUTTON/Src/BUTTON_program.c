@@ -12,8 +12,8 @@
 
 void BUTTON_voidInit(Port_t port, Pin_t pin, Config_t config)
 {
-    GPIO_PinConfig_t pin = {.port = port, .pin = pin, .mode = INPUT, .config = config};
-    GPIO_u8InitPin(&pin);
+    GPIO_PinConfig_t pininit = {.port = port, .pin = pin, .mode = INPUT, .config = config};
+    GPIO_u8InitPin(&pininit);
 }
 uint8_t BUTTON_voidRead()
 {

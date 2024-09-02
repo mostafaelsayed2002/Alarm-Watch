@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 #include "ErrType.h"
-#include "STM32F466xx.h"
+#include "STM32F10xxx.h"
 #include "NVIC_interface.h"
 
 uint8_t NVIC_u8Enable(IRQ_t IRQ)

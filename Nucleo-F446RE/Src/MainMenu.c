@@ -2,6 +2,7 @@
 #include "I2C_interface.h"
 #include "DS1307_interface.h"
 #include "GPIO_interface.h"
+#include "SPI_interface.h"
 #include "MainMenu.h"
 #include <stdio.h>
 
@@ -64,13 +65,17 @@ static void RecivedCallBack(void)
     CurrentTime.Date = Time.Date;
     CurrentTime.Month = Time.Month;
     CurrentTime.Year = Time.Year;
-    if (CheckAlarm())
+    // if (CheckAlarm())
+    // {
+    //     // send to blue pill
+    // }
+
+    // SPI_u8Transmit_IT(SPI2, &Time, 7);
+
+    DisplayTimeDate();
+    while (1)
     {
-        UART_u8Transmit(UART2, (uint8_t *)"\r\nAlarm!\r\n"); // send to blue pill
-    }
-    else
-    {
-        // send to blue pill
+        /* code */
     }
 }
 
