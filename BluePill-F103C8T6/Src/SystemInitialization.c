@@ -28,6 +28,12 @@ void SYS_Initialization()
         .pin = PIN15,
         .port = PORTC};
 
+    GPIO_PinConfig_t BLUE = {
+        .config = OUTPUT_PUSH_PULL,
+        .mode = OUTPUT_10MHZ,
+        .pin = PIN14,
+        .port = PORTC};
+
     GPIO_PinConfig_t SCK = {
         .config = FLOATING,
         .mode = INPUT,
@@ -57,6 +63,7 @@ void SYS_Initialization()
     GPIO_u8InitPin(&NSS);
     GPIO_u8InitPin(&RED);
     GPIO_u8InitPin(&GREEN);
+    GPIO_u8InitPin(&BLUE);
 
     /************************** MCAL Peripherals Initialization ******************/
     RCC_voidAPB2EnablePeripheralClock(12); // SPI1

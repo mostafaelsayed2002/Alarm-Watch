@@ -66,8 +66,14 @@ static void RecivedCallBack(void)
     CurrentTime.Date = Packet.Time.Date;
     CurrentTime.Month = Packet.Time.Month;
     CurrentTime.Year = Packet.Time.Year;
-
-    Packet.type = DATE_TIME_PACKET;
+    if (CheckAlarm())
+    {
+        Packet.type = ALARM_PACKET;
+    }
+    else
+    {
+        Packet.type = DATE_TIME_PACKET;
+    }
     SPI_u8Transmit_IT(SPI2, (uint8_t *)(&Packet), 8, NULL);
     // DisplayTimeDate();
 }

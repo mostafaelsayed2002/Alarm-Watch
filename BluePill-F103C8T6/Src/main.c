@@ -60,6 +60,7 @@ void ReceiveCallBack()
   }
   else if (time.type == ALARM)
   {
+    GPIO_u8SetPinValue(PORTC, PIN14, HIGH);
   }
   else if (time.type == LOGED)
   {
