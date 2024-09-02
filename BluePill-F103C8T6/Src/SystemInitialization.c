@@ -3,6 +3,7 @@
 #include "RCC_interface.h"
 #include "NVIC_interface.h"
 #include "SPI_interface.h"
+#include "LCD_interface.h"
 
 void SYS_Initialization()
 {
@@ -20,23 +21,6 @@ void SYS_Initialization()
         .mode = OUTPUT_10MHZ,
         .pin = PIN1,
         .port = PORTA};
-    GPIO_PinConfig_t RED2 = {
-        .config = OUTPUT_PUSH_PULL,
-        .mode = OUTPUT_10MHZ,
-        .pin = PIN2,
-        .port = PORTA};
-
-    GPIO_PinConfig_t c15 = {
-        .config = OUTPUT_PUSH_PULL,
-        .mode = OUTPUT_10MHZ,
-        .pin = PIN15,
-        .port = PORTC};
-
-    GPIO_PinConfig_t c14 = {
-        .config = OUTPUT_PUSH_PULL,
-        .mode = OUTPUT_10MHZ,
-        .pin = PIN14,
-        .port = PORTC};
 
     GPIO_PinConfig_t GREEN = {
         .config = OUTPUT_PUSH_PULL,
@@ -73,10 +57,6 @@ void SYS_Initialization()
     GPIO_u8InitPin(&NSS);
     GPIO_u8InitPin(&RED);
     GPIO_u8InitPin(&GREEN);
-    GPIO_u8InitPin(&RED2);
-
-    GPIO_u8InitPin(&c14);
-    GPIO_u8InitPin(&c15);
 
     /************************** MCAL Peripherals Initialization ******************/
     RCC_voidAPB2EnablePeripheralClock(12); // SPI1
@@ -93,5 +73,5 @@ void SYS_Initialization()
 
     SPI_u8Init(&SPI1_Config);
     /************************** HAL Peripherals Initialization ******************/
-    //    LCD_voidInit();
+    LCD_voidInit();
 }

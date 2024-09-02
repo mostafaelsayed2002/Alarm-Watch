@@ -131,21 +131,23 @@ void SYS_Initialization()
         .CCRValue = 0x28,
         .TRISEValue = 0x09};
 
-    // SPI_Config_t SPI2_Config = {
-    //     .BaudRate = FPCLK_8,
-    //     .DataFrameFormat = BIT8,
-    //     .LSBFirst = MSB,
-    //     .Mode = MASTER,
-    //     .SPI = SPI2,
-    //     .clockPolarity = ZERO_START,
-    //     .clockPhase = FIRST_EDGE,
-    //     .SoftwareSlaveManagement = HW};
+    SPI_Config_t SPI2_Config = {
+        .BaudRate = FPCLK_256,
+        .DataFrameFormat = BIT8,
+        .LSBFirst = MSB,
+        .Mode = MASTER,
+        .SPI = SPI2,
+        .clockPolarity = ZERO_START,
+        .clockPhase = FIRST_EDGE,
+        .SoftwareSlaveManagement = HW};
 
     UART_u8Init(&UART2_Config);
     I2C_Init(&I2C1_Config);
-    // SPI_u8Init(&SPI2_Config);
+    SPI_u8Init(&SPI2_Config);
 
     /************************** MCAL Peripherals Initialization ******************/
 
     DS1307_AttachI2C(I2C1);
+    DS1307_u8EnableClock();
+    DS1307_u8SetHourMode(DS1307_12H);
 }

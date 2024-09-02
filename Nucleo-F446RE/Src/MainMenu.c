@@ -3,27 +3,28 @@
 #include "DS1307_interface.h"
 #include "GPIO_interface.h"
 #include "SPI_interface.h"
+#include "ErrType.h"
 #include "MainMenu.h"
 #include <stdio.h>
 
 DS1307_Time_t Alarm[5];
-DS1307_Time_t Time;
+PacketDef_t Packet;
 DS1307_Time_t CurrentTime;
 
 static void DisplayTimeDate()
 {
-    uint8_t DateStr[2];
-    uint8_t MonthStr[2];
-    uint8_t YearStr[2];
-    uint8_t HoursStr[2];
-    uint8_t MinutesStr[2];
-    uint8_t SecondsStr[2];
-    sprintf(DateStr, "%d", Time.Date);
-    sprintf(MonthStr, "%d", Time.Month);
-    sprintf(YearStr, "%d", Time.Year);
-    sprintf(HoursStr, "%d", Time.Hours);
-    sprintf(MinutesStr, "%d", Time.Minutes);
-    sprintf(SecondsStr, "%d", Time.Seconds);
+    uint8_t DateStr[4];
+    uint8_t MonthStr[4];
+    uint8_t YearStr[4];
+    uint8_t HoursStr[4];
+    uint8_t MinutesStr[4];
+    uint8_t SecondsStr[4];
+    sprintf((char *)DateStr, "%d", Packet.Time.Date);
+    sprintf((char *)MonthStr, "%d", Packet.Time.Month);
+    sprintf((char *)YearStr, "%d", Packet.Time.Year);
+    sprintf((char *)HoursStr, "%d", Packet.Time.Hours);
+    sprintf((char *)MinutesStr, "%d", Packet.Time.Minutes);
+    sprintf((char *)SecondsStr, "%d", Packet.Time.Seconds);
 
     UART_u8Transmit(UART2, (uint8_t *)"\r\n");
     UART_u8Transmit(UART2, (uint8_t *)"\n-----------Time & Date------------\r\n");
@@ -57,31 +58,23 @@ static uint8_t CheckAlarm()
 
 static void RecivedCallBack(void)
 {
-    if (Time.Seconds == CurrentTime.Seconds && Time.Minutes == CurrentTime.Minutes && Time.Hours == CurrentTime.Hours && Time.Date == CurrentTime.Date && Time.Month == CurrentTime.Month && Time.Year == CurrentTime.Year)
+    if (Packet.Time.Seconds == CurrentTime.Seconds && Packet.Time.Minutes == CurrentTime.Minutes && Packet.Time.Hours == CurrentTime.Hours && Packet.Time.Date == CurrentTime.Date && Packet.Time.Month == CurrentTime.Month && Packet.Time.Year == CurrentTime.Year)
         return;
-    CurrentTime.Seconds = Time.Seconds;
-    CurrentTime.Minutes = Time.Minutes;
-    CurrentTime.Hours = Time.Hours;
-    CurrentTime.Date = Time.Date;
-    CurrentTime.Month = Time.Month;
-    CurrentTime.Year = Time.Year;
-    // if (CheckAlarm())
-    // {
-    //     // send to blue pill
-    // }
+    CurrentTime.Seconds = Packet.Time.Seconds;
+    CurrentTime.Minutes = Packet.Time.Minutes;
+    CurrentTime.Hours = Packet.Time.Hours;
+    CurrentTime.Date = Packet.Time.Date;
+    CurrentTime.Month = Packet.Time.Month;
+    CurrentTime.Year = Packet.Time.Year;
 
-    // SPI_u8Transmit_IT(SPI2, &Time, 7);
-
-    DisplayTimeDate();
-    while (1)
-    {
-        /* code */
-    }
+    Packet.type = DATE_TIME_PACKET;
+    SPI_u8Transmit_IT(SPI2, (uint8_t *)(&Packet), 8, NULL);
+    // DisplayTimeDate();
 }
 
 static void GetTimeDate()
 {
-    DS1307_u8GetTimeIT(&Time, RecivedCallBack);
+    DS1307_u8GetTimeIT((&(Packet.Time)), RecivedCallBack);
 }
 
 static void SetTimeDate()
@@ -179,7 +172,7 @@ void MainMenu()
     UART_u8Receive(UART2, Choice);
     if (Choice[0] == 49)
     {
-        UART_u8Transmit(UART2, (uint8_t *)"\r\n3To stop the Clock and Return to Main Menu!\r\n");
+        UART_u8Transmit(UART2, (uint8_t *)"\r\nTo stop the Clock and Return to Main Menu!\r\n");
         uint8_t PC13 = HIGH;
         GPIO_u8ReadPinValue(PORTC, PIN13, &PC13);
         while (PC13)
@@ -187,6 +180,9 @@ void MainMenu()
             GetTimeDate();
             GPIO_u8ReadPinValue(PORTC, PIN13, &PC13);
         }
+        // Packet.type = LOGED_PACKET;
+        // while (NOK == SPI_u8Transmit_IT(SPI2, (uint8_t *)(&Packet), 8, NULL))
+        //     ;
     }
     else if (Choice[0] == 50)
     {

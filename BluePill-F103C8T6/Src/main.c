@@ -6,35 +6,78 @@
 #include "GPIO_interface.h"
 #include "SYSTICK_interface.h"
 
-uint8_t res[4];
+typedef enum
+{
+  FAILD,
+  LOGED,
+  NORMAL,
+  ALARM
+} APPState_t;
+
+typedef struct
+{
+  uint8_t type;
+  uint8_t Seconds;
+  uint8_t Minutes;
+  uint8_t Hours;
+  uint8_t Day;
+  uint8_t Date;
+  uint8_t Month;
+  uint8_t Year;
+} Time_t;
+
+Time_t time;
+
+void DisplayNumber(uint8_t number)
+{
+  uint8_t firstDigit = number / 10;
+  uint8_t secondDigit = number % 10;
+  LCD_voidWrite(firstDigit + '0');
+  LCD_voidWrite(secondDigit + '0');
+}
+
+void DisplayDataTime()
+{
+  LCD_voidCmd(0x80);
+  DisplayNumber(time.Hours);
+  LCD_voidWrite(':');
+  DisplayNumber(time.Minutes);
+  LCD_voidWrite(':');
+  DisplayNumber(time.Seconds);
+  LCD_voidCmd(0xC0);
+  DisplayNumber(time.Date);
+  LCD_voidWrite('/');
+  DisplayNumber(time.Month);
+  LCD_voidWrite('/');
+  DisplayNumber(time.Year);
+}
 
 void ReceiveCallBack()
 {
-
-  if (res[0] == 0x41)
+  if (time.type == NORMAL)
   {
-    GPIO_u8SetPinValue(PORTA, PIN2, 1);
+    DisplayDataTime();
   }
-  if (res[1] == 0x42)
+  else if (time.type == ALARM)
   {
-    GPIO_u8SetPinValue(PORTA, PIN1, 1);
   }
-  if (res[2] == 0x43)
+  else if (time.type == LOGED)
   {
-    GPIO_u8SetPinValue(PORTC, PIN15, 1);
+    LCD_voidCmd(0x01);
+    GPIO_u8SetPinValue(PORTC, PIN15, HIGH);
   }
-  if (res[3] == 0x44)
+  else if (time.type == FAILD)
   {
-    GPIO_u8SetPinValue(PORTC, PIN14, 1);
+    GPIO_u8SetPinValue(PORTA, PIN1, HIGH);
   }
 }
 
 int main(void)
 {
   SYS_Initialization();
-  SPI_u8Receive_IT(SPI1, res, 4, ReceiveCallBack);
 
   while (1)
   {
+    SPI_u8Receive_IT(SPI1, (uint8_t *)&time, 8, ReceiveCallBack);
   }
 }
