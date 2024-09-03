@@ -11,6 +11,7 @@ int main(void)
   uint8_t loginStatus = Login();
   while (loginStatus == FAILD)
     ;
+
   while (1)
   {
     MainMenu();

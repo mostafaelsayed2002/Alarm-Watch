@@ -95,8 +95,7 @@ uint8_t DS1307_u8GetTimeIT(DS1307_Time_t *Time, void (*Callback)(void))
 {
     value = Time;
     GetCallBack = Callback;
-    I2C_WriteIT(num, DS1307_ADDRESS, data, 1, GetTimeCallbackWrite);
-    return OK;
+    return I2C_WriteIT(num, DS1307_ADDRESS, data, 1, GetTimeCallbackWrite);
 }
 
 uint8_t DS1307_u8SetHourMode(uint8_t HourMode)

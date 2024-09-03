@@ -5,11 +5,13 @@
 #include "SPI_interface.h"
 #include "ErrType.h"
 #include "MainMenu.h"
+#include "SYSTICK_interface.h"
 #include <stdio.h>
 
 DS1307_Time_t Alarm[5];
 PacketDef_t Packet;
 DS1307_Time_t CurrentTime;
+PacketDef_t Clear;
 
 static void DisplayTimeDate()
 {
@@ -56,10 +58,11 @@ static uint8_t CheckAlarm()
     return 0;
 }
 
-static void RecivedCallBack(void)
+static void RecivedCallBack()
 {
     if (Packet.Time.Seconds == CurrentTime.Seconds && Packet.Time.Minutes == CurrentTime.Minutes && Packet.Time.Hours == CurrentTime.Hours && Packet.Time.Date == CurrentTime.Date && Packet.Time.Month == CurrentTime.Month && Packet.Time.Year == CurrentTime.Year)
         return;
+
     CurrentTime.Seconds = Packet.Time.Seconds;
     CurrentTime.Minutes = Packet.Time.Minutes;
     CurrentTime.Hours = Packet.Time.Hours;
@@ -75,7 +78,6 @@ static void RecivedCallBack(void)
         Packet.type = DATE_TIME_PACKET;
     }
     SPI_u8Transmit_IT(SPI2, (uint8_t *)(&Packet), 8, NULL);
-    // DisplayTimeDate();
 }
 
 static void GetTimeDate()
@@ -186,9 +188,9 @@ void MainMenu()
             GetTimeDate();
             GPIO_u8ReadPinValue(PORTC, PIN13, &PC13);
         }
-        // Packet.type = LOGED_PACKET;
-        // while (NOK == SPI_u8Transmit_IT(SPI2, (uint8_t *)(&Packet), 8, NULL))
-        //     ;
+        Clear.type = LOGED_PACKET;
+        while (SPI_u8Transmit_IT(SPI2, (uint8_t *)(&Clear), 8, NULL) == NOK)
+            ;
     }
     else if (Choice[0] == 50)
     {

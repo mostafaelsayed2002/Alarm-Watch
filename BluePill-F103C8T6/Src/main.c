@@ -61,11 +61,17 @@ void ReceiveCallBack()
   else if (time.type == ALARM)
   {
     GPIO_u8SetPinValue(PORTC, PIN14, HIGH);
+    LCD_voidCmd(0x01);
+    LCD_voidWrite('A');
+    LCD_voidWrite('L');
+    LCD_voidWrite('A');
+    LCD_voidWrite('R');
+    LCD_voidWrite('M');
   }
   else if (time.type == LOGED)
   {
     LCD_voidCmd(0x01);
-    GPIO_u8SetPinValue(PORTC, PIN15, HIGH);
+    GPIO_u8SetPinValue(PORTC, PIN15,HIGH);
   }
   else if (time.type == FAILD)
   {
