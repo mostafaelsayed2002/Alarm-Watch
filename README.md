@@ -30,7 +30,8 @@ This project aims to develop an alarm watch using STM32 microcontrollers (STM32F
 
 ## Project Diagram
 
-![Project Diagram](https://drive.google.com/file/d/1k3uWNBPjcczer-eJucRFog6fLKoFzqyG/view?usp=sharing)
+![Project Diagram](https://i.imgur.com/0IvECn3.png)
+
 ---
 
 ## Video Demonstrations
